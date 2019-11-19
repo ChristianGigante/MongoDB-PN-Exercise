@@ -12,18 +12,18 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // Parse requests of content-type - application/json
 app.use(bodyParser.json())
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
-       next();
+    next();
 });
 
 
 
 // Set up default mongoose connection
-let db_url = 'mongodb://127.0.0.1/db_exercise';
-mongoose.connect(db_url, { useNewUrlParser: true });
+let db_url = 'mongodb://127.0.0.1/db_exercise_gigante';
+mongoose.connect(db_url, { useNewUrlParser: true , useUnifiedTopology: true });
 // Get the default connection
 var db = mongoose.connection;
 // Bind connection to error event (to get notification of connection errors)
@@ -40,12 +40,17 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 // ------------------------------------------------------------
 
 // Import Models
-const Rider = require('./models/rider.model');
+const model = require('./models/rider.model');
 
 
 // Question 1 - Create a HTTP Request to add a riders in the database :
 // When we create a rider he doesn't have a score yet.
+app.post('/rider/create', (req, res) => {
+    console.log(req.body);
 
+    let data = req.body;
+    let rider = new model.Rider(req.body)
+})
 
 // Question 2 - Create a HTTP Request to fetch all the riders :
 
