@@ -23,7 +23,12 @@ app.use(function (req, res, next) {
 
 // Set up default mongoose connection
 let db_url = 'mongodb://127.0.0.1/db_exercise_gigante';
-mongoose.connect(db_url, { useNewUrlParser: true , useUnifiedTopology: true });
+mongoose.connect(db_url, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+    useCreateIndex: true
+});
 // Get the default connection
 var db = mongoose.connection;
 // Bind connection to error event (to get notification of connection errors)
@@ -39,40 +44,111 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 // Context : We want to create a web application to manage a motorcyle Championship. 
 // ------------------------------------------------------------
 
-// Import Models
-const model = require('./models/rider.model');
 
+// Import modelRiders
+const modelRider = require('./models/rider.model');
+const modelMotor = require('./models/motorcycle.model')
 
 // Question 1 - Create a HTTP Request to add a riders in the database :
 // When we create a rider he doesn't have a score yet.
-app.post('/rider/create', (req, res) => {
+app.post('/rider', (req, res) => {
     console.log(req.body);
+    let rider = new modelRider.Rider(req.body);
+    rider.save(function (err, rider) {
+        if (err) return console.error(err);
+        res.send(rider);
+    });
+});
 
-    let data = req.body;
-    let rider = new model.Rider(req.body)
-})
 
 // Question 2 - Create a HTTP Request to fetch all the riders :
-
+app.get('/rider', (req, res) => {
+    modelRider.Rider.find((err, data) => {
+        if (err) {
+            res.send(err)
+        }
+        res.send(data);
+    })
+})
 
 // Question 3 - Create a HTTP Request to fetch one rider :
-
+app.get('/rider/:id', (req, res) => {
+    modelRider.Rider.findOne({ _id: req.params.id }, (err, data) => {
+        if (err) {
+            res.send(err);
+        }
+        res.send(data);
+    })
+})
 
 // Question 4 - Create a HTTP Request to update firstName or/and lastName of a rider :
-
+app.put('/rider/:id/score', (req, res) => {
+    modelRider.Rider.findByIdAndUpdate({ _id: req.params.id },
+        req.body, (err, data) => {
+            if (err) {
+                res.send("<404> Rider Not Found " + err);
+            }
+            res.send(data);
+        })
+        .catch(err => {
+            res.send("<500> Service Unavailable!" + err)
+        })
+})
 
 // Question 5 - Create a HTTP Request to ADD score of a rider :
+app.put('/rider/:id', (req, res) => {
+    modelRider.Rider.findOneAndUpdate({ _id: req.params.id },
+        { $push: { score: req.body.score } },
+        (err, data) => {
+            if (err) {
+                res.send("<404> Rider Not Found " + err);
+            }
+            res.send(data);
+        })
+        .catch(err => {
+            res.send("<500> Service Unavailable!" + err)
+        })
+})
 
 
 // Question 6 - Create a HTTP Request to delete one rider :
-
+app.delete('/rider/:id', (req, res) => {
+    modelRider.Rider.findByIdAndRemove({ _id: req.params.id }, (err, data) => {
+        if (err) {
+            res.send("<404> Rider Not Found " + err);
+        }
+        res.send(data)
+    })
+        .catch(err => {
+            res.send("<500> Service Unavailable!" + err)
+        })
+})
 
 // Question 7 - Create a HTTP Request to create motorcycles :
-// For create a motorcycle you will need to create the model first.
+// For create a motorcycle you will need to create the modelRider first.
+app.post('/motorcycle', (req, res) => {
+    // console.log(req.body);
 
+    let motor = new modelMotor.motorcycle(req.body);
+    motor.save((err, data) => {
+        if (err) {
+            res.send("<404> Rider Not Found " + err);
+        }
+        res.send(data)
+    })
+})
 
 // Question 8 - Create a HTTP Request to fetch all the motorcycles:
-
+app.get('/motorcycle',(req,res) => {
+    modelMotor.motorcycle.find({})
+        .populate('riders')
+        .exec((err,data) => {
+            if (err) {
+                res.send("<404> Rider Not Found " + err);
+            }
+            res.send(data)
+        })
+})
 
 // Question 9 - Create a HTTP Request to fetch all the motorcycles associate to one rider:
 
