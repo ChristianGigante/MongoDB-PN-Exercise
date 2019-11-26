@@ -82,10 +82,10 @@ app.get('/rider/:id', (req, res) => {
 })
 
 // Question 4 - Create a HTTP Request to update firstName or/and lastName of a rider :
-app.put('/rider/:id/score', (req, res) => {
+app.put('/rider/:id', (req, res) => {
     modelRider.Rider.findByIdAndUpdate({ _id: req.params.id },
         req.body, (err, data) => {
-            if (err) {
+            if (err || !data.length) {
                 res.send("<404> Rider Not Found " + err);
             }
             res.send(data);
@@ -96,9 +96,10 @@ app.put('/rider/:id/score', (req, res) => {
 })
 
 // Question 5 - Create a HTTP Request to ADD score of a rider :
-app.put('/rider/:id', (req, res) => {
-    modelRider.Rider.findOneAndUpdate({ _id: req.params.id },
-        { $push: { score: req.body.score } },
+app.put('/rider/:id/score', (req, res) => {
+    modelRider.Rider.findByIdAndUpdate({ _id: req.params.id },
+        { $addToSet: { score: req.body.score } },
+        { new: true },
         (err, data) => {
             if (err) {
                 res.send("<404> Rider Not Found " + err);
@@ -139,11 +140,11 @@ app.post('/motorcycle', (req, res) => {
 })
 
 // Question 8 - Create a HTTP Request to fetch all the motorcycles:
-app.get('/motorcycle',(req,res) => {
+app.get('/motorcycle', (req, res) => {
     modelMotor.motorcycle.find({})
-        .populate('riders')
-        .exec((err,data) => {
-            if (err) {
+        .populate('riderId')
+        .exec((err, data) => {
+            if (err || !data.length) {
                 res.send("<404> Rider Not Found " + err);
             }
             res.send(data)
@@ -151,10 +152,37 @@ app.get('/motorcycle',(req,res) => {
 })
 
 // Question 9 - Create a HTTP Request to fetch all the motorcycles associate to one rider:
-
+app.get('/motorcycle/:id', (req, res) => {
+    modelMotor.motorcycle.find({})
+        .populate('riderId')
+        .exec((err, data) => {
+            if (err || !data.length) {
+                res.send("<404> Rider Not Found " + err);
+            }
+            let riderMotors = []
+            data.forEach(element => {
+                if (element.riderId._id == req.params.id) {
+                    riderMotors.push(element)
+                }
+            });
+            res.send(riderMotors)
+        })
+})
 
 // BONUS 10 - Create a HTTP Request to to get the riders ranking
+app.get('/riders/ranking', (req, res) => {
+    modelRider.Rider.find({})
+    .exec((err,data) => {
+        if (err || !data.length) {
+            res.send("<404> Rider Not Found " + err);
+        }
+        else{
+            res.send(data)
+        }
+    })
+    // .sort({score:score})
 
+})
 
 //
 // End of the exercise

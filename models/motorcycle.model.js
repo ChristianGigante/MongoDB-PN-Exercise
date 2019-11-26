@@ -11,7 +11,7 @@ let motorSchema = new Schema({
     manufacturer: { type: String, required: true },
     displacement: { type: String, required: true },
     weight: { type: Number, required: true },
-    riderId: { type: Schema.Types.ObjectId, ref: 'riders' }
+    riderId: { type: Schema.Types.ObjectId, ref: 'Rider' }
 }, {
         collection: 'motorcycles'
     });
